@@ -10,6 +10,7 @@ import org.apache.accumulo.core.data.ArrayByteSequence;
 import org.apache.accumulo.core.data.ByteSequence;
 import org.apache.accumulo.core.data.Key;
 import org.apache.accumulo.core.data.Value;
+import org.apache.accumulo.core.iterators.IteratorEnvironment;
 import org.apache.hadoop.io.Text;
 import org.apache.log4j.Logger;
 
@@ -76,7 +77,12 @@ public class FieldAgeOffFilter extends AppliedRule {
      * Logger
      */
     private static final Logger log = Logger.getLogger(FieldAgeOffFilter.class);
-    
+
+    /**
+     * Is this table an index
+     */
+    private static final String IS_INDEX_TABLE = "index.table";
+
     /**
      * Determine whether or not the rules are applied
      */
@@ -210,22 +216,21 @@ public class FieldAgeOffFilter extends AppliedRule {
      *            {@code Map} object containing the TTL, TTL_UNITS, and MATCHPATTERN for the filter rule.
      * @see datawave.iterators.filter.AgeOffConfigParams
      */
-    
-    public void init(FilterOptions options) {
+    public void init(FilterOptions options, IteratorEnvironment iteratorEnvironment) {
         if (options == null) {
             throw new IllegalArgumentException("FilterOptions can not be null");
         }
         String scanStartStr = options.getOption(AgeOffConfigParams.SCAN_START_TIMESTAMP);
         long scanStart = scanStartStr == null ? System.currentTimeMillis() : Long.parseLong(scanStartStr);
-        this.init(options, scanStart);
+        this.init(options, scanStart, iteratorEnvironment);
     }
     
-    protected void init(FilterOptions options, final long startScan) {
+    protected void init(FilterOptions options, final long startScan, IteratorEnvironment iteratorEnvironment) {
         if (options == null) {
             throw new IllegalArgumentException("ttl must be set for a FilterRule implementation");
         }
-        super.init(options);
-        this.cvOrFilter.init(options);
+        super.init(options, iteratorEnvironment);
+        this.cvOrFilter.init(options, iteratorEnvironment);
         String ttlUnits = options.getTTLUnits();
         
         Set<ByteSequence> fields = Sets.newHashSet();
@@ -244,7 +249,12 @@ public class FieldAgeOffFilter extends AppliedRule {
             }
         }
         
-        isIndextable = Boolean.valueOf(options.getOption("isindextable", "false"));
+        // look at the table configuration
+        String isIndexTableStr = iteratorEnvironment.getConfig().get(IS_INDEX_TABLE);
+        isIndextable = (null == isIndexTableStr ? false : Boolean.getBoolean(isIndexTableStr));
+
+        // look at options from xml file
+        isIndextable = isIndextable || Boolean.valueOf(options.getOption("isindextable", "false"));
         
         long defaultUnitsFactor = 1L; // default to "days" as the unit.
         

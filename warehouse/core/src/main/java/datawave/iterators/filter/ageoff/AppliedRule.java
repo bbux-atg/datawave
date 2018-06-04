@@ -4,6 +4,7 @@ import com.google.common.base.Objects;
 import datawave.iterators.filter.AgeOffConfigParams;
 import org.apache.accumulo.core.data.Key;
 import org.apache.accumulo.core.data.Value;
+import org.apache.accumulo.core.iterators.IteratorEnvironment;
 import org.apache.accumulo.core.iterators.SortedKeyValueIterator;
 import org.apache.log4j.Logger;
 
@@ -29,20 +30,23 @@ public abstract class AppliedRule implements FilterRule {
     
     private static final Logger log = Logger.getLogger(AppliedRule.class);
     
+    private IteratorEnvironment iteratorEnvironment;
+    
     /*
      * (non-Javadoc)
      * 
      * @see datawave.iterators.filter.ageoff.FilterRule#init(datawave.iterators.filter.ageoff.FilterOptions)
      */
     @Override
-    public void init(FilterOptions options) {
+    public void init(FilterOptions options, IteratorEnvironment iteratorEnvironment) {
         this.currentOptions = options;
+        this.iteratorEnvironment = iteratorEnvironment;
         ageOffPeriod = options.getAgeOffPeriod();
     }
     
     /** Perform initialization in support of a deepCopy, copying any expensive state from the parent. */
     protected void deepCopyInit(FilterOptions newOptions, AppliedRule parentCopy) {
-        init(newOptions);
+        init(newOptions, this.iteratorEnvironment);
     }
     
     public abstract boolean isFilterRuleApplied();
@@ -100,7 +104,8 @@ public abstract class AppliedRule implements FilterRule {
      * @param scanStart
      * @return
      */
-    public FilterRule deepCopy(long scanStart) {
+    @Override
+    public FilterRule deepCopy(IteratorEnvironment myEnv, long scanStart) {
         AppliedRule newFilter;
         try {
             newFilter = (AppliedRule) super.getClass().newInstance();

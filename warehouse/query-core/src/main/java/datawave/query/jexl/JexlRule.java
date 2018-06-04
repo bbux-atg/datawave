@@ -43,8 +43,8 @@ public class JexlRule extends AppliedRule {
     private static final Logger log = Logger.getLogger(JexlRule.class);
     
     @Override
-    public void init(FilterOptions options) {
-        super.init(options);
+    public void init(FilterOptions options, IteratorEnvironment iteratorEnvironment) {
+        super.init(options, iteratorEnvironment);
         
         isApplied = false;
         

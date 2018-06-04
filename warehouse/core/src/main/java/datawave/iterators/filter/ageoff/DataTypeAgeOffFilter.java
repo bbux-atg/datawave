@@ -10,6 +10,7 @@ import org.apache.accumulo.core.data.ArrayByteSequence;
 import org.apache.accumulo.core.data.ByteSequence;
 import org.apache.accumulo.core.data.Key;
 import org.apache.accumulo.core.data.Value;
+import org.apache.accumulo.core.iterators.IteratorEnvironment;
 import org.apache.hadoop.io.Text;
 import org.apache.log4j.Logger;
 
@@ -72,6 +73,11 @@ public class DataTypeAgeOffFilter extends AppliedRule {
      */
     private static final Logger log = Logger.getLogger(DataTypeAgeOffFilter.class);
     
+    /**
+     * Is this table an index
+     */
+    private static final String IS_INDEX_TABLE = "index.table";
+
     /**
      * Determine whether or not the rules are applied
      */
@@ -226,14 +232,14 @@ public class DataTypeAgeOffFilter extends AppliedRule {
      * @see datawave.iterators.filter.AgeOffConfigParams
      */
     
-    public void init(FilterOptions options) {
+    public void init(FilterOptions options, IteratorEnvironment iteratorEnvironment) {
         String scanStartStr = options.getOption(AgeOffConfigParams.SCAN_START_TIMESTAMP);
         long scanStart = scanStartStr == null ? System.currentTimeMillis() : Long.parseLong(scanStartStr);
-        this.init(options, scanStart);
+        this.init(options, scanStart, iteratorEnvironment);
     }
     
-    protected void init(FilterOptions options, final long scanStart) {
-        super.init(options);
+    protected void init(FilterOptions options, final long scanStart, IteratorEnvironment iteratorEnvironment) {
+        super.init(options, iteratorEnvironment);
         if (options == null) {
             throw new IllegalArgumentException("FilterOptions can not be null");
         }
@@ -248,7 +254,12 @@ public class DataTypeAgeOffFilter extends AppliedRule {
                 dataTypes.add(new ArrayByteSequence(dt.trim().getBytes()));
         }
         
-        isIndextable = Boolean.valueOf(options.getOption("isindextable", "false"));
+        // look at the table configuration
+        String isIndexTableStr = iteratorEnvironment.getConfig().get(IS_INDEX_TABLE);
+        isIndextable = (null == isIndexTableStr ? false : Boolean.getBoolean(isIndexTableStr));
+
+        // look at options from xml file
+        isIndextable = isIndextable || Boolean.valueOf(options.getOption("isindextable", "false"));
         
         long ttlUnitsFactor = 1L; // default to "days" as the unit.
         

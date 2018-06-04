@@ -5,6 +5,7 @@ import datawave.iterators.filter.ageoff.FilterOptions;
 import datawave.iterators.filter.ageoff.FilterRule;
 import org.apache.accumulo.core.data.Key;
 import org.apache.accumulo.core.data.Value;
+import org.apache.accumulo.core.iterators.IteratorEnvironment;
 import org.apache.accumulo.core.iterators.SortedKeyValueIterator;
 
 public class TestFilter implements FilterRule {
@@ -12,7 +13,7 @@ public class TestFilter implements FilterRule {
     public FilterOptions options;
     
     @Override
-    public void init(FilterOptions options) {
+    public void init(FilterOptions options, IteratorEnvironment iteratorEnvironment) {
         this.options = options;
     }
     
@@ -32,7 +33,7 @@ public class TestFilter implements FilterRule {
     }
     
     @Override
-    public FilterRule deepCopy(long scanStart) {
+    public FilterRule deepCopy(IteratorEnvironment myEnv, long scanStart) {
         return null;
     }
 }

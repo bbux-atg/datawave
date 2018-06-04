@@ -1,15 +1,16 @@
 package datawave.iterators.filter;
 
+import java.util.Date;
+
+import org.apache.accumulo.core.data.Key;
+import org.apache.accumulo.core.data.Value;
+import org.apache.accumulo.core.iterators.IteratorEnvironment;
+import org.apache.log4j.Logger;
+
 import datawave.iterators.filter.ageoff.AgeOffPeriod;
 import datawave.iterators.filter.ageoff.AppliedRule;
 import datawave.iterators.filter.ageoff.FilterOptions;
 import datawave.util.StringUtils;
-import org.apache.accumulo.core.data.Key;
-import org.apache.accumulo.core.data.Value;
-import org.apache.accumulo.core.security.ColumnVisibility;
-import org.apache.log4j.Logger;
-
-import java.util.Date;
 
 /**
  * This class provides an abstract base class to be extended to filter based on matching a STRING to the {@code Strings} tokens that represents some portion of
@@ -106,8 +107,8 @@ public abstract class TokenFilterBase extends AppliedRule {
      * @see datawave.iterators.filter.AgeOffConfigParams
      */
     @Override
-    public void init(FilterOptions options) {
-        super.init(options);
+    public void init(FilterOptions options, IteratorEnvironment iteratorEnvironment) {
+        super.init(options, iteratorEnvironment);
         if (options == null) {
             throw new IllegalArgumentException("options must be set for FilterRule implementation");
         }

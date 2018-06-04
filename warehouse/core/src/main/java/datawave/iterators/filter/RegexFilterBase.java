@@ -11,6 +11,7 @@ import datawave.iterators.filter.ageoff.FilterOptions;
 
 import org.apache.accumulo.core.data.Key;
 import org.apache.accumulo.core.data.Value;
+import org.apache.accumulo.core.iterators.IteratorEnvironment;
 import org.apache.log4j.Logger;
 
 /**
@@ -97,16 +98,19 @@ public abstract class RegexFilterBase extends AppliedRule {
         return dtFlag;
     }
     
-    /**
-     * Required by the {@code FilterRule} interface. Used to initialize the the {@code FilterRule} implementation
-     * 
-     * @param options
-     *            {@code Map} object containing the TTL, TTL_UNITS, and MATCHPATTERN for the filter rule.
-     * @see datawave.iterators.filter.AgeOffConfigParams
-     */
+  /**
+   * Required by the {@code FilterRule} interface. Used to initialize the the {@code FilterRule}
+   * implementation
+   * 
+   * @param options
+   *          {@code Map} object containing the TTL, TTL_UNITS, and MATCHPATTERN for the filter rule.
+   * @param iteratorEnvironment
+   *          the iterator environment
+   * @see datawave.iterators.filter.AgeOffConfigParams
+   */
     @Override
-    public void init(FilterOptions options) {
-        super.init(options);
+    public void init(FilterOptions options, IteratorEnvironment iteratorEnvironment) {
+        super.init(options, iteratorEnvironment);
         if (options == null) {
             throw new IllegalArgumentException("options must be set for FilterRule implementation");
         }

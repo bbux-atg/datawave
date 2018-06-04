@@ -15,6 +15,7 @@ import datawave.iterators.filter.AgeOffConfigParams;
 import datawave.iterators.filter.ageoff.FilterOptions;
 import datawave.iterators.filter.ageoff.FilterRule;
 
+import org.apache.accumulo.core.iterators.IteratorEnvironment;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
@@ -33,25 +34,54 @@ public class FileRuleWatcher extends FileSystemWatcher<Collection<FilterRule>> {
     
     private static final Logger log = Logger.getLogger(FileRuleWatcher.class);
     
+    private final IteratorEnvironment iteratorEnvironment;
+
     /**
      * @param fs
      * @param filePath
      * @param configuredDiff
      * @throws IOException
+     * @deprecated use constructor that takes iterator environment
      */
     public FileRuleWatcher(FileSystem fs, Path filePath, long configuredDiff) throws IOException {
         super(fs, filePath, configuredDiff);
+        this.iteratorEnvironment = null;
     }
     
     /**
      * @param filePath
      * @param configuredDiff
      * @throws IOException
+     * @deprecated use constructor that takes iterator environment
      */
     public FileRuleWatcher(Path filePath, long configuredDiff) throws IOException {
         super(filePath.getFileSystem(new Configuration()), filePath, configuredDiff);
+        this.iteratorEnvironment = null;
     }
     
+    /**
+     * @param fs
+     * @param filePath
+     * @param configuredDiff
+     * @param iteratorEnvironment
+     * @throws IOException
+     */
+    public FileRuleWatcher(FileSystem fs, Path filePath, long configuredDiff, IteratorEnvironment iteratorEnvironment) throws IOException {
+        super(fs, filePath, configuredDiff);
+        this.iteratorEnvironment = iteratorEnvironment;
+    }
+
+    /**
+     * @param filePath
+     * @param configuredDiff
+     * @param iteratorEnvironment
+     * @throws IOException
+     */
+    public FileRuleWatcher(Path filePath, long configuredDiff, IteratorEnvironment iteratorEnvironment) throws IOException {
+        super(filePath.getFileSystem(new Configuration()), filePath, configuredDiff);
+        this.iteratorEnvironment = iteratorEnvironment;
+    }
+
     /*
      * (non-Javadoc)
      * 
@@ -157,7 +187,7 @@ public class FileRuleWatcher extends FileSystemWatcher<Collection<FilterRule>> {
                     
                     option.setOption(AgeOffConfigParams.EXTENDED_OPTIONS, extOptions.toString().substring(0, extOptionLen - 1));
                     
-                    filter.init(option);
+                    filter.init(option, this.iteratorEnvironment);
                     
                     filterRules.add(filter);
                     

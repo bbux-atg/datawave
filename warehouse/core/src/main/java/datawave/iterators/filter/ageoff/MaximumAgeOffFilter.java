@@ -3,6 +3,7 @@ package datawave.iterators.filter.ageoff;
 import datawave.iterators.filter.AgeOffConfigParams;
 import org.apache.accumulo.core.data.Key;
 import org.apache.accumulo.core.data.Value;
+import org.apache.accumulo.core.iterators.IteratorEnvironment;
 import org.apache.log4j.Logger;
 
 /**
@@ -79,14 +80,14 @@ public class MaximumAgeOffFilter extends AppliedRule {
      * @see datawave.iterators.filter.AgeOffConfigParams
      */
     
-    public void init(FilterOptions options) {
+    public void init(FilterOptions options, IteratorEnvironment iteratorEnvironment) {
         String scanStartStr = options.getOption(AgeOffConfigParams.SCAN_START_TIMESTAMP);
         long scanStart = scanStartStr == null ? System.currentTimeMillis() : Long.parseLong(scanStartStr);
-        this.init(options, scanStart);
+        this.init(options, scanStart, iteratorEnvironment);
     }
     
-    protected void init(FilterOptions options, final long scanStart) {
-        super.init(options);
+    protected void init(FilterOptions options, final long scanStart, IteratorEnvironment iteratorEnvironment) {
+        super.init(options, iteratorEnvironment);
         if (options == null) {
             throw new IllegalArgumentException("ttl must be set for a FilterRule implementation");
         }
