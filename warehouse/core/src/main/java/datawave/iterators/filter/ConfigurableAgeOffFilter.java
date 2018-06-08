@@ -314,8 +314,9 @@ public class ConfigurableAgeOffFilter extends Filter implements OptionDescriber 
         
         Preconditions.checkNotNull(options, "Configuration filename and " + "the default ttl must be set for the ConfigurableAgeOffFilter");
         
-        long sessionScanStart = options.containsKey(AgeOffConfigParams.SCAN_START_TIMESTAMP) ? Long.parseLong(options
-                        .get(AgeOffConfigParams.SCAN_START_TIMESTAMP)) : System.currentTimeMillis();
+        long sessionScanStart = options.containsKey(AgeOffConfigParams.SCAN_START_TIMESTAMP)
+                        ? Long.parseLong(options.get(AgeOffConfigParams.SCAN_START_TIMESTAMP))
+                        : System.currentTimeMillis();
         
         initialize(options.get(AgeOffConfigParams.TTL), options.get(AgeOffConfigParams.TTL_UNITS), options.get(AgeOffConfigParams.TTL_SHORT_CIRCUIT),
                         sessionScanStart, options.get(AgeOffConfigParams.FILTER_CONFIG));
@@ -461,9 +462,8 @@ public class ConfigurableAgeOffFilter extends Filter implements OptionDescriber 
         
         String ttlUnits = options.get(AgeOffConfigParams.TTL_UNITS);
         
-        return (ttlUnits != null)
-                        && (ttlUnits.equals(AgeOffTtlUnits.DAYS) || ttlUnits.equals(AgeOffTtlUnits.HOURS) || ttlUnits.equals(AgeOffTtlUnits.MINUTES)
-                                        || ttlUnits.equals(AgeOffTtlUnits.SECONDS) || ttlUnits.equals(AgeOffTtlUnits.MILLISECONDS));
+        return (ttlUnits != null) && (ttlUnits.equals(AgeOffTtlUnits.DAYS) || ttlUnits.equals(AgeOffTtlUnits.HOURS) || ttlUnits.equals(AgeOffTtlUnits.MINUTES)
+                        || ttlUnits.equals(AgeOffTtlUnits.SECONDS) || ttlUnits.equals(AgeOffTtlUnits.MILLISECONDS));
     }
     
     /**
