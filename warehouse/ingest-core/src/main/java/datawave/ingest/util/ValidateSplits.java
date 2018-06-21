@@ -34,7 +34,6 @@ public class ValidateSplits {
     public static final String CONFIG_DIRECTORY_LOCATION_OVERRIDE = "cd";
     public static final String CONFIG_SUFFIX_OVERRIDE = "cs";
     public static final String WORK_DIR_PATH = "wd";
-
     
     @SuppressWarnings("static-access")
     public static void main(String[] args) throws Exception {
@@ -104,7 +103,7 @@ public class ValidateSplits {
         boolean shardTablesSplitsValid = shardSplitValidator.allTablesValid(tables, daysToVerify);
         return shardTablesSplitsValid;
     }
-
+    
     /**
      * Performs validation of creation and balance of shard splits
      */

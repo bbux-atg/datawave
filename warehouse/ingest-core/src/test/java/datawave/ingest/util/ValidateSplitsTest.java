@@ -17,6 +17,7 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 
 import datawave.ingest.mapreduce.handler.shard.ShardIdFactory;
+import datawave.ingest.mapreduce.handler.shard.ShardedDataTypeHandler;
 import datawave.ingest.mapreduce.job.ShardedTableMapFile;
 import datawave.ingest.mapreduce.partition.TestShardGenerator;
 import datawave.ingest.util.ValidateSplits.ShardSplitValidator;
@@ -34,6 +35,7 @@ public class ValidateSplitsTest {
     public static void defineShardLocationsFile() throws IOException {
         conf = new Configuration();
         conf.setInt(ShardIdFactory.NUM_SHARDS, SHARDS_PER_DAY);
+        conf.set(ShardedDataTypeHandler.SHARDED_TNAMES, "shard");
     }
     
     private ShardSplitValidator validator;
