@@ -158,7 +158,7 @@ public class MetadataTableSplits {
                 log.error("Unable to clean up " + tmpSplitsFile, e2);
             }
         }
-        log.info("Updated the metadata table splits");
+        log.info("Updated the metadata table splits at " + splitsPath.toString());
         
     }
     

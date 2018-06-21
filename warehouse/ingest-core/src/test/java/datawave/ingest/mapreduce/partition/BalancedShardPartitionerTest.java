@@ -1,5 +1,8 @@
 package datawave.ingest.mapreduce.partition;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -10,10 +13,6 @@ import java.util.SortedMap;
 import java.util.TreeMap;
 import java.util.TreeSet;
 
-import datawave.ingest.mapreduce.handler.shard.ShardIdFactory;
-import datawave.ingest.mapreduce.job.BulkIngestKey;
-import datawave.ingest.mapreduce.job.ShardedTableMapFile;
-import datawave.util.time.DateHelper;
 import org.apache.accumulo.core.data.Key;
 import org.apache.accumulo.core.data.Value;
 import org.apache.accumulo.core.data.impl.KeyExtent;
@@ -27,8 +26,10 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import datawave.ingest.mapreduce.handler.shard.ShardIdFactory;
+import datawave.ingest.mapreduce.job.BulkIngestKey;
+import datawave.ingest.mapreduce.job.ShardedTableMapFile;
+import datawave.util.time.DateHelper;
 
 public class BalancedShardPartitionerTest {
     private static final int TOTAL_TSERVERS = 600;
@@ -191,6 +192,47 @@ public class BalancedShardPartitionerTest {
         assertEquals(nextPartition, partition);
     }
     
+    @Test(expected = IllegalStateException.class)
+    public void testShouldThrowExceptionIfTodaysShardsDontExist() throws IOException {
+        String tableName = "shard5";
+        simulateMissingSplitsForDay("strictlyBalanced", tableName, 0);
+        
+        partitioner.getPartition(new BulkIngestKey(new Text(tableName), new Key(formatDay(0) + "_1")), new Value(), NUM_REDUCE_TASKS);
+    }
+    
+    private void simulateMissingSplitsForDay(String verificationStrategy, String tableName, int daysAgo) throws IOException {
+        // start with a well distributed set of shards per day for 3 days
+        SortedMap<KeyExtent,String> locations = createDistributedLocations(tableName);
+        // for shards from "daysAgo", remove them
+        Text prevEndRow = new Text();
+        String date = DateHelper.format(System.currentTimeMillis() - (daysAgo * DateUtils.MILLIS_PER_DAY));
+        for (int currShard = 0; currShard < SHARDS_PER_DAY; currShard++) {
+            locations.remove(new KeyExtent(tableName, new Text(date + "_" + currShard), prevEndRow));
+        }
+        
+        new TestShardGenerator(conf, locations, tableName);
+        partitioner.setConf(conf);
+        if (null != verificationStrategy) {
+            // constant needs to be created
+            conf.set(BalancedShardPartitioner.MISSING_SHARD_STRATEGY_PROP, verificationStrategy);
+        }
+        assertEquals(tableName, conf.get(ShardedTableMapFile.CONFIGURED_SHARDED_TABLE_NAMES));
+    }
+    
+    private SortedMap<KeyExtent,String> createDistributedLocations(String tableName) {
+        SortedMap<KeyExtent,String> locations = new TreeMap<>();
+        long now = System.currentTimeMillis();
+        int tserverId = 1;
+        Text prevEndRow = new Text();
+        for (int daysAgo = 0; daysAgo <= 2; daysAgo++) {
+            String day = DateHelper.format(now - (daysAgo * DateUtils.MILLIS_PER_DAY));
+            for (int currShard = 0; currShard < SHARDS_PER_DAY; currShard++) {
+                locations.put(new KeyExtent(tableName, new Text(day + "_" + currShard), prevEndRow), Integer.toString(tserverId++));
+            }
+        }
+        return locations;
+    }
+    
     private void simulateDifferentNumberShardsPerDay(String missingShardStrategy, String tableName) throws IOException {
         // This emulates today, yesterday and the day before have SHARDS_PER_DAY splits and
         // 3 days ago and 4 days ago only have 2 splits, _0 and _1.
@@ -253,14 +295,6 @@ public class BalancedShardPartitionerTest {
         }
         // 9 is what we get by hashing the shardId
         Assert.assertTrue("For " + daysBack + " days ago, we had a different number of collisions: " + collisions, expectedCollisions >= collisions); // this
-                                                                                                                                                      // has
-                                                                                                                                                      // more to
-                                                                                                                                                      // do with
-                                                                                                                                                      // the
-                                                                                                                                                      // random
-                                                                                                                                                      // assignment
-                                                                                                                                                      // of the
-                                                                                                                                                      // tablets
         
     }
     

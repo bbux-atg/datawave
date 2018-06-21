@@ -28,6 +28,7 @@ import datawave.ingest.metric.IngestInput;
 import datawave.ingest.metric.IngestProcess;
 import datawave.ingest.table.config.ShardTableConfigHelper;
 import datawave.ingest.table.config.TableConfigHelper;
+import datawave.ingest.util.ValidateSplits;
 import datawave.iterators.PropogatingIterator;
 import datawave.marking.MarkingFunctions;
 import datawave.util.StringUtils;

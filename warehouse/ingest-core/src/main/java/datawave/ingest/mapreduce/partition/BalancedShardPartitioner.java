@@ -94,6 +94,9 @@ public class BalancedShardPartitioner extends Partitioner<BulkIngestKey,Value> i
                 // <tt>(-(<i>insertion point</i>) - 1)</tt> // insertion point in the index of the key greater
                 Text shardString = keys.get(Math.abs(closestAssignment + 1));
                 return assignments.get(shardString);
+            case "strictlyBalanced":
+                throw new IllegalStateException("Missing shard strategy is set to strictlyBalanced and either shards were "
+                                + "not created for the day, or not all shards were created for the day, or the metadata " + "splits file is out of date");
             default:
                 throw new RuntimeException("Unsupported missing shard strategy " + MISSING_SHARD_STRATEGY_PROP + "=" + missingShardStrategy);
         }
@@ -115,7 +118,7 @@ public class BalancedShardPartitioner extends Partitioner<BulkIngestKey,Value> i
     /**
      * Loads the splits file for the table name and uses it to assign partitions.
      */
-    private HashMap<Text,Integer> getPartitionsByShardId(String tableName) throws IOException {
+    HashMap<Text,Integer> getPartitionsByShardId(String tableName) throws IOException {
         if (log.isDebugEnabled())
             log.debug("Loading splits data for " + tableName);
         
@@ -158,7 +161,7 @@ public class BalancedShardPartitioner extends Partitioner<BulkIngestKey,Value> i
     }
     
     private int calculateNumberOfUniqueTservers(TreeMap<Text,String> shardIdToLocations) {
-        int totalNumUniqueTServers = new HashSet(shardIdToLocations.values()).size();
+        int totalNumUniqueTServers = new HashSet<String>(shardIdToLocations.values()).size();
         if (log.isDebugEnabled())
             log.debug("Total TServers involved: " + totalNumUniqueTServers);
         return totalNumUniqueTServers;
